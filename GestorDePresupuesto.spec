@@ -40,6 +40,11 @@ hidden_imports = [
     "jose",
     "cryptography",
     "dateutil",
+    "webview",
+    "webview.platforms.winforms",
+    "webview.platforms.edgechromium",
+    "clr",
+    "pythonnet",
 ]
 hidden_imports += collect_submodules("app")
 
@@ -82,7 +87,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,  # Windowed desktop application
+    console=False,  # Windowed desktop application (no terminal window)
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

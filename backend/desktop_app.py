@@ -7,7 +7,11 @@ import time
 import socket
 import threading
 import webbrowser
+import multiprocessing
 from pathlib import Path
+
+# Required for frozen executables (PyInstaller)
+multiprocessing.freeze_support()
 
 import uvicorn
 
@@ -69,6 +73,7 @@ def main():
     app_url = f"http://127.0.0.1:{port}"
 
     # Try to open with pywebview if installed, otherwise system browser
+    opened_webview = False
     try:
         import webview
         webview.create_window(
@@ -79,8 +84,11 @@ def main():
             min_size=(900, 600),
         )
         webview.start()
-    except ImportError:
-        # Fallback to browser
+        opened_webview = True
+    except Exception as e:
+        print(f"Webview could not start ({e}), falling back to default browser...")
+
+    if not opened_webview:
         webbrowser.open(app_url)
         # Keep process alive while user is using it
         try:
@@ -91,4 +99,5 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     main()
