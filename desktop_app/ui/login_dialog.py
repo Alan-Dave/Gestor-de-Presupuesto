@@ -8,7 +8,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from app.db.database import SessionLocal
 from app.models.models import User
-from app.services.auth_service import authenticate_user, register_user
+from app.core.security import verify_password
+from app.services.auth_service import register_user
 from app.schemas.schemas import UserRegister
 from ui.styles import DARK_THEME_QSS
 
@@ -121,8 +122,8 @@ class LoginDialog(QDialog):
 
         db = SessionLocal()
         try:
-            user = authenticate_user(db, email, pwd)
-            if not user:
+            user = db.query(User).filter(User.email == email.lower()).first()
+            if not user or not verify_password(pwd, user.hashed_password):
                 QMessageBox.critical(self, "Error", "Credenciales incorrectas o usuario no encontrado.")
                 return
             self.authenticated_user = user
@@ -151,7 +152,8 @@ class LoginDialog(QDialog):
                 currency_code=currency,
                 locale="es-CL" if currency == "CLP" else "en-US"
             )
-            user = register_user(db, data)
+            token_resp = register_user(db, data)
+            user = db.query(User).filter(User.id == token_resp.user.id).first()
             self.authenticated_user = user
             QMessageBox.information(self, "Éxito", "¡Usuario registrado correctamente!")
             self.accept()
